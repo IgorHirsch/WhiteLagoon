@@ -1,7 +1,5 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using WhiteLagoon.Application.Common.Interfaces;
-using WhiteLagoon.Web.Models;
 using WhiteLagoon.Web.ViewModels;
 
 namespace WhiteLagoon.Web.Controllers
@@ -27,16 +25,8 @@ namespace WhiteLagoon.Web.Controllers
         }
 
         [HttpPost]
-        public IActionResult Index(HomeVM homeVM)
+        public IActionResult GetVillasByDate(int nights, DateOnly checkInDate)
         {
-            homeVM.Villalist = _unitOfWork.Villa.GetAll(includeProperties: "VillaAmenity");
-           
-            return View(homeVM);
-        }
-
-        public IActionResult GetVillasByDate(int nigths, DateOnly checkInDate)
-        {
-            Thread.Sleep(2000);
             var villaList = _unitOfWork.Villa.GetAll(includeProperties: "VillaAmenity").ToList();
             foreach (var villa in villaList)
             {
@@ -49,9 +39,10 @@ namespace WhiteLagoon.Web.Controllers
             {
                 CheckInDate = checkInDate,
                 Villalist = villaList,
-                Nights = nigths
+                Nights = nights
             };
-            return PartialView("_VillaList",homeVM);
+
+            return PartialView("_VillaList", homeVM);
         }
 
         public IActionResult Privacy()
