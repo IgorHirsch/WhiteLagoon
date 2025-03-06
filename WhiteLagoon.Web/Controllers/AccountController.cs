@@ -45,30 +45,35 @@ namespace WhiteLagoon.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(LoginVM loginVM)
         {
-             if(ModelState.IsValid)
+            if (ModelState.IsValid)
             {
                 var result = await _signInManager.PasswordSignInAsync(loginVM.Email, loginVM.Password, loginVM.RememberMe, lockoutOnFailure: false);
 
+
                 if (result.Succeeded)
                 {
-                  
-                    if (string.IsNullOrEmpty(loginVM.RedirectUrl))
+                    var user = await _userManager.FindByEmailAsync(loginVM.Email);
+                    if (await _userManager.IsInRoleAsync(user, SD.Role_Admin))
                     {
-                        return RedirectToAction("Index", "Home");
+                        return RedirectToAction("Index", "Dashboard");
                     }
                     else
                     {
-                        return Redirect(loginVM.RedirectUrl);
+                        if (string.IsNullOrEmpty(loginVM.RedirectUrl))
+                        {
+                            return RedirectToAction("Index", "Home");
+                        }
+                        else
+                        {
+                            return LocalRedirect(loginVM.RedirectUrl);
+                        }
                     }
                 }
                 else
                 {
-                    ModelState.AddModelError("", "Invalid login attempt");
+                    ModelState.AddModelError("", "Invalid login attempt.");
                 }
             }
-
-
-          
 
             return View(loginVM);
         }
@@ -110,8 +115,6 @@ namespace WhiteLagoon.Web.Controllers
 
             return View(registerVM);
         }
-
-
 
         [HttpPost]
         public async Task< IActionResult> Register(RegisterVM registerVM)
