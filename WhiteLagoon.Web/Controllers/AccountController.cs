@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using WhiteLagoon.Application.Common.Interfaces;
@@ -11,27 +10,25 @@ namespace WhiteLagoon.Web.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly IUnitOfWork _unitOfWork;
+
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly RoleManager<IdentityRole> _roleManager;
 
         public AccountController(
-            IUnitOfWork unitOfWork, 
-            UserManager<ApplicationUser> userManager, 
-            SignInManager<ApplicationUser> signInManager, 
-            RoleManager<IdentityRole> roleManager)
+            UserManager<ApplicationUser> userManager,
+            RoleManager<IdentityRole> roleManager,
+            SignInManager<ApplicationUser> signInManager)
         {
-            _unitOfWork = unitOfWork;
+            _roleManager = roleManager;
             _userManager = userManager;
             _signInManager = signInManager;
-            _roleManager = roleManager;
         }
 
-
-        public IActionResult Login(string returnUrl=null)
+        public IActionResult Login(string returnUrl = null)
         {
-            returnUrl??= Url.Content("~/");
+
+            returnUrl ??= Url.Content("~/");
 
             LoginVM loginVM = new()
             {
@@ -40,44 +37,6 @@ namespace WhiteLagoon.Web.Controllers
 
             return View(loginVM);
         }
-
-
-        [HttpPost]
-        public async Task<IActionResult> Login(LoginVM loginVM)
-        {
-            if (ModelState.IsValid)
-            {
-                var result = await _signInManager.PasswordSignInAsync(loginVM.Email, loginVM.Password, loginVM.RememberMe, lockoutOnFailure: false);
-
-
-                if (result.Succeeded)
-                {
-                    var user = await _userManager.FindByEmailAsync(loginVM.Email);
-                    if (await _userManager.IsInRoleAsync(user, SD.Role_Admin))
-                    {
-                        return RedirectToAction("Index", "Dashboard");
-                    }
-                    else
-                    {
-                        if (string.IsNullOrEmpty(loginVM.RedirectUrl))
-                        {
-                            return RedirectToAction("Index", "Home");
-                        }
-                        else
-                        {
-                            return LocalRedirect(loginVM.RedirectUrl);
-                        }
-                    }
-                }
-                else
-                {
-                    ModelState.AddModelError("", "Invalid login attempt.");
-                }
-            }
-
-            return View(loginVM);
-        }
-
 
         public async Task<IActionResult> Logout()
         {
@@ -90,7 +49,6 @@ namespace WhiteLagoon.Web.Controllers
             return View();
         }
 
-
         public IActionResult Register(string returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
@@ -100,7 +58,6 @@ namespace WhiteLagoon.Web.Controllers
                 _roleManager.CreateAsync(new IdentityRole(SD.Role_Customer)).Wait();
             }
 
-
             RegisterVM registerVM = new()
             {
                 RoleList = _roleManager.Roles.Select(x => new SelectListItem
@@ -109,15 +66,13 @@ namespace WhiteLagoon.Web.Controllers
                     Value = x.Name
                 }),
                 RedirectUrl = returnUrl
-                
             };
-
 
             return View(registerVM);
         }
 
         [HttpPost]
-        public async Task< IActionResult> Register(RegisterVM registerVM)
+        public async Task<IActionResult> Register(RegisterVM registerVM)
         {
             if (ModelState.IsValid)
             {
@@ -152,7 +107,7 @@ namespace WhiteLagoon.Web.Controllers
                     }
                     else
                     {
-                        return Redirect(registerVM.RedirectUrl);
+                        return LocalRedirect(registerVM.RedirectUrl);
                     }
                 }
 
@@ -160,20 +115,51 @@ namespace WhiteLagoon.Web.Controllers
                 {
                     ModelState.AddModelError("", error.Description);
                 }
-
             }
-
-            registerVM. RoleList = _roleManager.Roles.Select(x => new SelectListItem
-                {
-                    Text = x.Name,
-                    Value = x.Name
-                });
-
+            registerVM.RoleList = _roleManager.Roles.Select(x => new SelectListItem
+            {
+                Text = x.Name,
+                Value = x.Name
+            });
 
             return View(registerVM);
         }
+
+        [HttpPost]
+        public async Task<IActionResult> Login(LoginVM loginVM)
+        {
+            if (ModelState.IsValid)
+            {
+                var result = await _signInManager
+                    .PasswordSignInAsync(loginVM.Email, loginVM.Password, loginVM.RememberMe, lockoutOnFailure: false);
+
+
+                if (result.Succeeded)
+                {
+                    var user = await _userManager.FindByEmailAsync(loginVM.Email);
+                    if (await _userManager.IsInRoleAsync(user, SD.Role_Admin))
+                    {
+                        return RedirectToAction("Index", "Dashboard");
+                    }
+                    else
+                    {
+                        if (string.IsNullOrEmpty(loginVM.RedirectUrl))
+                        {
+                            return RedirectToAction("Index", "Home");
+                        }
+                        else
+                        {
+                            return LocalRedirect(loginVM.RedirectUrl);
+                        }
+                    }
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Invalid login attempt.");
+                }
+            }
+
+            return View(loginVM);
+        }
     }
-
-
-
 }

@@ -44,16 +44,16 @@ namespace WhiteLagoon.Infrastructure.Data
 
                     _userManager.CreateAsync(new ApplicationUser
                     {
-                        UserName = "igor.hirsch@gmail.com",
-                        Email = "igor.hirsch@gmail.com",
-                        Name = "Igor Hirsch",
-                        NormalizedUserName = "IGOR.HIRSCH",
-                        NormalizedEmail = "IGOR.HIRSCH@GMAIL.COM",
+                        UserName = "admin@gmail.com",
+                        Email = "admin@gmail.com",
+                        Name = "Admin",
+                        NormalizedUserName = "ADMIN",
+                        NormalizedEmail = "ADMIN@GMAIL.COM",
                         PhoneNumber = "1234567890",
                         EmailConfirmed = true // Setzt die E-Mail als bestätigt
                     }, "Admin123*").GetAwaiter().GetResult();
 
-                    ApplicationUser user = _db.ApplicationUsers.FirstOrDefault(u => u.Email == "igor.hirsch@gmail.com");
+                    ApplicationUser user = _db.ApplicationUsers.FirstOrDefault(u => u.Email == "admin@gmail.com");
                     if (user != null)
                     {
                         _userManager.AddToRoleAsync(user, SD.Role_Admin).GetAwaiter().GetResult();

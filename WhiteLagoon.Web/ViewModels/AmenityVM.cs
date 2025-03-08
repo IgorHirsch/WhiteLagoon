@@ -8,6 +8,6 @@ namespace WhiteLagoon.Web.ViewModels
     {
         public Amenity? Amenity { get; set; }
         [ValidateNever]
-        public IEnumerable<SelectListItem>? AmenityList { get; set; }
+        public IEnumerable<SelectListItem>? VillaList { get; set; }
     }
 }
